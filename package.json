@@ -1,6 +1,6 @@
 {
   "name": "qsx",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "main": "index.js",
   "repository": "git@github.com:danburzo/qsx.git",
   "author": "Dan Burzo <dan@danburzo.ro>",
