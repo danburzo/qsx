@@ -7,6 +7,7 @@ const T = {
   FUNC_START: "(",
   FUNC_END: ")",
   ATTR: "@",
+  ONCE: "^",
 };
 
 const RE = new RegExp(
@@ -46,7 +47,7 @@ function qsa(el, $node, tree) {
   let attrs = $node.attrs;
   let $children = tree.childrenToArray($node);
 
-  return elements.map((element) => {
+  let res = elements.map((element) => {
     let scoped_els;
     if ($children.length) {
       scoped_els = $children.map(($child) => qsa(element, $child, tree));
@@ -75,14 +76,18 @@ function qsa(el, $node, tree) {
     }
     return res;
   });
+
+  return $node.once ? res[0] : res;
 }
 
 module.exports = function qsx(el, selector) {
   const tree = new SymbolTree();
-  const $root = {
+  const node = () => ({
     ctx: "",
     attrs: [],
-  };
+    once: false,
+  });
+  const $root = node();
   let $curr = $root;
 
   const tokens = selector
@@ -108,7 +113,7 @@ module.exports = function qsx(el, selector) {
         break;
       case T.GROUP_START:
         ctx_depth++;
-        $curr = tree.appendChild($curr, { ctx: "", attrs: [] });
+        $curr = tree.appendChild($curr, node());
         break;
       case T.GROUP_END:
         if (ctx_depth <= 0) {
@@ -123,7 +128,7 @@ module.exports = function qsx(el, selector) {
         break;
       case T.SEP:
         if (!fn_depth && ctx_depth) {
-          let $sibling = tree.insertAfter($curr, { ctx: "", attrs: [] });
+          let $sibling = tree.insertAfter($curr, node());
           if (!$curr.ctx) {
             tree.remove($curr);
           }
@@ -138,6 +143,9 @@ module.exports = function qsx(el, selector) {
           throw new Error(`Missing attribute after ${T.ATTR}`);
         }
         tree.parent($curr).attrs.push(attr.trim());
+        break;
+      case T.ONCE:
+        $curr.once = true;
         break;
       default:
         $curr.ctx += token;

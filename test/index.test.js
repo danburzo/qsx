@@ -97,6 +97,17 @@ tape("README examples", (t) => {
     },
   ]);
 
+  t.deepEqual(qsx(links, `li { ^a, @title }`), [
+    {
+      title: "item 1",
+      ".scoped": ['<a href="/first-link">First link</a>'],
+    },
+    {
+      title: "item 2",
+      ".scoped": ['<a href="/second-link">Second link</a>'],
+    },
+  ]);
+
   let terms = document(`
 		<dl>
 			<dt><a href='#ref1'>First term</a></dt>

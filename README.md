@@ -173,3 +173,23 @@ qsx(
   ],
 ];
 ```
+
+### Pick first query result with `^`
+
+For more complex queries where there resulting JSON contains several nested arrays, but for which you want to select a single element, you can prefix a selector with `^` to select just the first matching element — like `querySelector()` rather than `querySelectorAll()`.
+
+```js
+qsx(document, `li { ^a, @title }`);
+
+// =>
+[
+  {
+    title: "item 1",
+    ".scoped": ['<a href="/first-link">First link</a>'],
+  },
+  {
+    title: "item 2",
+    ".scoped": ['<a href="/second-link">Second link</a>'],
+  },
+];
+```
