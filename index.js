@@ -57,20 +57,23 @@ function qsa(el, $node, tree) {
       return element.outerHTML;
     }
 
-    if (attrs.length) {
-      let res = attrs.reduce((acc, k) => {
-        acc[k] =
-          k.indexOf(".") === 0 ? element[k.slice(1)] : element.getAttribute(k);
-        return acc;
-      }, {});
-      return $children.length
-        ? {
-            ...res,
-            ".scoped": scoped_els,
-          }
-        : res;
+    let res = {
+      ...(attrs.length
+        ? attrs.reduce((acc, k) => {
+            acc[k] =
+              k.indexOf(".") === 0
+                ? element[k.slice(1)]
+                : element.getAttribute(k);
+            return acc;
+          }, {})
+        : undefined),
+      ...($children.length ? { ".scoped": scoped_els } : undefined),
+    };
+    let keys = Object.keys(res);
+    if (keys.length === 1) {
+      return res[keys[0]];
     }
-    return scoped_els;
+    return res;
   });
 }
 

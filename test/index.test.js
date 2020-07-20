@@ -28,10 +28,6 @@ tape("qsx()", (t) => {
     ],
   ]);
 
-  t.deepEqual(qsx(doc, "a { @href }"), [
-    { href: "#1" },
-    { href: "#wo" },
-    { href: "#2" },
-  ]);
+  t.deepEqual(qsx(doc, "a { @href }"), ["#1", "#wo", "#2"]);
   t.end();
 });
