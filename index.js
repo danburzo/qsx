@@ -123,7 +123,11 @@ module.exports = function qsx(el, selector) {
         break;
       case T.SEP:
         if (!fn_depth && ctx_depth) {
-          $curr = tree.insertAfter($curr, { ctx: "", attrs: [] });
+          let $sibling = tree.insertAfter($curr, { ctx: "", attrs: [] });
+          if (!$curr.ctx) {
+            tree.remove($curr);
+          }
+          $curr = $sibling;
         } else {
           $curr.ctx += token;
         }

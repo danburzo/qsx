@@ -2,7 +2,8 @@ import tape from "tape";
 import { JSDOM } from "jsdom";
 import qsx from "../index";
 
-let doc = new JSDOM(`
+tape("qsx()", (t) => {
+  let doc = new JSDOM(`
 	<dl>
 		<dt><a href='#1' title='Go to term 1'>Term 1</a></dt>
 		<dd><strong>Very</strong>Def 1</dd>
@@ -15,7 +16,6 @@ let doc = new JSDOM(`
 	</dl>
 `).window.document;
 
-tape("qsx()", (t) => {
   t.deepEqual(qsx(doc, "dt { a, :scope + dd }"), [
     [
       [`<a href="#1" title="Go to term 1">Term 1</a>`],
@@ -29,5 +29,15 @@ tape("qsx()", (t) => {
   ]);
 
   t.deepEqual(qsx(doc, "a { @href }"), ["#1", "#wo", "#2"]);
+  t.end();
+});
+
+tape("qsx() dont include .scoped when only attrs", (t) => {
+  let doc = new JSDOM(`
+		<img src='/path' alt='alternative text'/>
+	`).window.document;
+  t.deepEqual(qsx(doc, "img { @alt, @src }"), [
+    { alt: "alternative text", src: "/path" },
+  ]);
   t.end();
 });
