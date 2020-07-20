@@ -218,3 +218,30 @@ tape('aliases', t => {
 
 	t.end();
 });
+
+tape('Netscape Bookmark File', t => {
+	let nbf = document(`
+		<dl>
+			<dt><a href='/link' add_date='123'>Link title</a></dt>
+			<dd>Description</dd>
+		</dl>
+	`);
+
+	t.deepEqual(
+		qsx(
+			nbf,
+			`dt { 
+				^ a { @add_date } >> dateAdded,  
+				^ :scope + dd { @.textContent } >> description
+			}`
+		),
+		[
+			{
+				dateAdded: '123',
+				description: 'Description'
+			}
+		]
+	);
+
+	t.end();
+});

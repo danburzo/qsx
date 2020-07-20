@@ -18,84 +18,17 @@ const RE = new RegExp(
 	'g'
 );
 
-function query(el, selector) {
-	let scope_combi_re = /^\s*:scope\s+(\+|\~)(.+)/;
-	let m = selector.match(scope_combi_re);
-	if (!m) {
-		return el.querySelectorAll(selector);
-	}
-	if (m[1] === '+') {
-		// next sibling
-		return el.nextElementSibling.matches(m[2])
-			? [el.nextElementSibling]
-			: [];
-	}
-	if (m[1] === '~') {
-		// subsequent sibling
-		els = [];
-		let sibling = el.nextElementSibling;
-		while (sibling) {
-			if (sibling.matches(m[2])) {
-				els.push(sibling);
-			}
-			sibling = sibling.nextElementSibling;
-		}
-		return els;
-	}
-	throw new Error(`Invalid combinator: ${m[1]}`);
-}
-
-function qsa(el, $node, tree) {
-	let elements = Array.from(query(el, $node.ctx || ':root'));
-	let attrs = $node.attrs;
-	let $children = tree.childrenToArray($node);
-
-	let res = elements.map(element => {
-		let scoped_els = {};
-		if ($children.length) {
-			let seq = $node.alias || '.scoped';
-			$children.forEach($child => {
-				let res = qsa(element, $child, tree);
-				if ($child.alias) {
-					scoped_els[$child.alias] = res;
-				} else {
-					if (!scoped_els[seq]) {
-						scoped_els[seq] = [];
-					}
-					scoped_els[seq].push(res);
-				}
-			});
-		}
-
-		/* By default, select outerHTML from element */
-		if (!$children.length && !attrs.length) {
-			return element.outerHTML;
-		}
-
-		let res = {
-			...(attrs.length
-				? attrs.reduce((acc, it) => {
-						let k = it.attr;
-						acc[it.alias || k] =
-							k.indexOf('.') === 0
-								? element[k.slice(1)]
-								: element.getAttribute(k);
-						return acc;
-				  }, {})
-				: undefined),
-			...($children.length ? scoped_els : undefined)
-		};
-		let keys = Object.keys(res);
-		if (keys.length === 1) {
-			return res[keys[0]];
-		}
-		return res;
-	});
-
-	return $node.first ? res[0] : res;
-}
-
 module.exports = function qsx(el, selector) {
+	let [tree, $root] = getAST(selector);
+	let res = applyAST(el, $root, tree);
+	return Array.isArray(res) ? res.map(firstKeyIfOnly) : firstKeyIfOnly(res);
+};
+
+/*
+	Returns the AST of a selector
+	-----------------------------
+ */
+function getAST(selector) {
 	const tree = new SymbolTree();
 	const node = () => ({
 		ctx: '',
@@ -183,5 +116,128 @@ module.exports = function qsx(el, selector) {
 				$curr.ctx += token;
 		}
 	}
-	return qsa(el, $root, tree);
-};
+	return [tree, $root];
+}
+
+/*
+	Apply a query to an element
+	---------------------------
+
+	@param root_el — query scope 
+	@param $node — current node in the query AST
+	@param tree — reference to the query AST
+	@param clean — (bool) 
+ */
+function applyAST(root_el, $node, tree) {
+	/*
+		Start by fetching the elements matching 
+		the current selector
+	 */
+	let matching_elements = query(root_el, $node.ctx || ':root');
+
+	let attrs = $node.attrs;
+	let $children = tree.childrenToArray($node);
+
+	let matches = matching_elements.map(element => {
+		let result = {};
+
+		// mix in requested attributes from the element
+		attrs.forEach(item => {
+			let k = item.attr;
+			let v =
+				k.indexOf('.') === 0
+					? element[k.slice(1)]
+					: element.getAttribute(k);
+			// use alias as key, if any
+			result[item.alias || k] = v;
+		});
+
+		let sequential = [];
+		let to_merge = [];
+		$children.forEach($child => {
+			let child_result = applyAST(element, $child, tree);
+			if (Array.isArray(child_result)) {
+				child_result = child_result.map(firstKeyIfOnly);
+			}
+			if ($child.alias) {
+				if ($child.alias === '.') {
+					to_merge.push(child_result);
+				} else {
+					result[$child.alias] = firstKeyIfOnly(child_result);
+				}
+			} else {
+				sequential.push(firstKeyIfOnly(child_result));
+			}
+		});
+
+		if (sequential.length) {
+			result[$node.alias || '.scoped'] = sequential.map(firstKeyIfOnly);
+		}
+
+		to_merge.forEach(obj => {
+			result = { ...result, ...obj };
+		});
+
+		/* By default, select outerHTML from element */
+		if (Object.keys(result).length === 0) {
+			return element.outerHTML;
+		}
+
+		return result;
+	});
+
+	/*
+		Only return the first of the matches
+		when the node is marked as such.
+	 */
+	return $node.first ? matches[0] : matches;
+}
+
+/*
+	Query selector on an element
+	----------------------------
+
+	Thin wrapper on top of querySelectorAll,
+	to enable extensions such as:
+
+		:scope + el
+		:scope ~ el
+ */
+function query(el, selector) {
+	let scope_combi_re = /^\s*:scope\s+(\+|\~)(.+)/;
+	let m = selector.match(scope_combi_re);
+	if (!m) {
+		return Array.from(el.querySelectorAll(selector));
+	}
+	if (m[1] === '+') {
+		// next sibling combinator
+		return el.nextElementSibling.matches(m[2])
+			? [el.nextElementSibling]
+			: [];
+	}
+	if (m[1] === '~') {
+		// subsequent sibling combinator
+		els = [];
+		let sibling = el.nextElementSibling;
+		while (sibling) {
+			if (sibling.matches(m[2])) {
+				els.push(sibling);
+			}
+			sibling = sibling.nextElementSibling;
+		}
+		return els;
+	}
+	throw new Error(`Invalid combinator: ${m[1]}`);
+}
+
+/*
+	If the object has a single key/value pair, 
+	return its only value instead.
+ */
+function firstKeyIfOnly(o) {
+	let keys;
+	if (!Array.isArray(o) && (keys = Object.keys(o)).length === 1) {
+		return o[keys[0]];
+	}
+	return o;
+}
