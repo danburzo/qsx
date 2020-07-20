@@ -1,6 +1,6 @@
 # qsx
 
-Extended CSS selectors for querying the DOM and extracting parts of it.
+Extended CSS selectors for querying the DOM and extracting parts of it. Used by the [`hred` command-line tool](https://github.com/danburzo/hred).
 
 ## Installation
 
