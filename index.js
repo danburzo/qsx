@@ -6,7 +6,7 @@ const T = {
   SEP: ",",
   FUNC_START: "(",
   FUNC_END: ")",
-  ATTR: "$",
+  ATTR: "@",
 };
 
 const RE = new RegExp(

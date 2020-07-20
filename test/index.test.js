@@ -27,5 +27,11 @@ tape("qsx()", (t) => {
       [`<dd><strong>Very</strong>Def 2</dd>`],
     ],
   ]);
+
+  t.deepEqual(qsx(doc, "a { @href }"), [
+    { href: "#1" },
+    { href: "#wo" },
+    { href: "#2" },
+  ]);
   t.end();
 });

@@ -40,10 +40,10 @@ qsx(
 
 ### Extracting attributes and DOM properties
 
-By default, the `outerHTML` property of each matched element is included in the response. Use `$attr` to extract attributes, and `$.prop` to access DOM properties. For example:
+By default, the `outerHTML` property of each matched element is included in the response. Use `@attr` to extract attributes, and `@.prop` to access DOM properties. For example:
 
 ```js
-qsx(document, `a { $href, $.textContent }`);
+qsx(document, `a { @href, @.textContent }`);
 ```
 
 ### `:scope` and combining selectors
