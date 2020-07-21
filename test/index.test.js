@@ -1,11 +1,9 @@
 import tape from 'tape';
-import { JSDOM } from 'jsdom';
-import qsx from '../index';
-
-const document = content => new JSDOM(content).window.document;
+import qsx from '../src/index.js';
+import dom from './util-dom.js';
 
 tape('qsx()', t => {
-	let doc = document(`
+	let doc = dom(`
 	<dl>
 		<dt><a href='#1' title='Go to term 1'>Term 1</a></dt>
 		<dd><strong>Very</strong>Def 1</dd>
@@ -30,12 +28,12 @@ tape('qsx()', t => {
 		]
 	]);
 
-	t.deepEqual(qsx(doc, 'a { @href }'), ['#1', '#wo', '#2']);
+	t.deepEqual(qsx(doc, 'a @href'), ['#1', '#wo', '#2']);
 	t.end();
 });
 
 tape('qsx() dont include .scoped when only attrs', t => {
-	let doc = document(`
+	let doc = dom(`
 		<img src='/path' alt='alternative text'/>
 	`);
 	t.deepEqual(qsx(doc, 'img { @alt, @src }'), [
@@ -45,7 +43,47 @@ tape('qsx() dont include .scoped when only attrs', t => {
 });
 
 tape('README examples', t => {
-	let table = document(`
+	let headings = dom`
+		<h2>Installation</h2>
+		<h3>With npm</h3>
+		<h3>With yarn</h3>
+		<h2>Usage</h2>
+		<h3>From the command-line</h3>
+	`;
+
+	t.deepEqual(
+		qsx(headings, 'h2, h3'),
+		[
+			['<h2>Installation</h2>', '<h2>Usage</h2>'],
+			[
+				'<h3>With npm</h3>',
+				'<h3>With yarn</h3>',
+				'<h3>From the command-line</h3>'
+			]
+		],
+		'commas select parallel sets of headings'
+	);
+
+	t.deepEqual(
+		qsx(headings, 'h2 >> h2s, h3 >> h3s'),
+		{
+			h2s: ['<h2>Installation</h2>', '<h2>Usage</h2>'],
+			h3s: [
+				'<h3>With npm</h3>',
+				'<h3>With yarn</h3>',
+				'<h3>From the command-line</h3>'
+			]
+		},
+		'commas select parallel sets of headings (with aliases)'
+	);
+
+	// t.deepEqual(
+	// 	qsx(headings, ':is(h2, h3)'),
+	// 	['<h2>Installation</h2>', '<h3>With npm</h3>', '<h3>With yarn</h3>', '<h2>Usage</h2>', '<h3>From the command-line</h3>'],
+	// 	':is() behaves like normal CSS semantics'
+	// );
+
+	let table = dom(`
 <table>
 	<tbody>
 		<tr>
@@ -72,7 +110,7 @@ tape('README examples', t => {
 		]
 	);
 
-	let links = document(`
+	let links = dom(`
 		<ul>
 			<li title='item 1'><a href="/first-link">First link</a></li>
 			<li title='item 2'><a href="/second-link">Second link</a></li>
@@ -84,23 +122,14 @@ tape('README examples', t => {
 		{ href: '/second-link', '.textContent': 'Second link' }
 	]);
 
+	t.deepEqual(qsx(links, 'a @.textContent'), ['First link', 'Second link']);
+
 	t.deepEqual(qsx(links, 'a { @.textContent }'), [
-		'First link',
-		'Second link'
+		{ '.textContent': 'First link' },
+		{ '.textContent': 'Second link' }
 	]);
 
 	t.deepEqual(qsx(links, `li { a, @title }`), [
-		{
-			title: 'item 1',
-			'.scoped': [['<a href="/first-link">First link</a>']]
-		},
-		{
-			title: 'item 2',
-			'.scoped': [['<a href="/second-link">Second link</a>']]
-		}
-	]);
-
-	t.deepEqual(qsx(links, `li { ^ a, @title }`), [
 		{
 			title: 'item 1',
 			'.scoped': ['<a href="/first-link">First link</a>']
@@ -111,7 +140,29 @@ tape('README examples', t => {
 		}
 	]);
 
-	let terms = document(`
+	t.deepEqual(qsx(links, `li { a, @title }`), [
+		{
+			title: 'item 1',
+			'.scoped': ['<a href="/first-link">First link</a>']
+		},
+		{
+			title: 'item 2',
+			'.scoped': ['<a href="/second-link">Second link</a>']
+		}
+	]);
+
+	t.deepEqual(qsx(links, `li { ^ a, @title }`), [
+		{
+			title: 'item 1',
+			'.scoped': '<a href="/first-link">First link</a>'
+		},
+		{
+			title: 'item 2',
+			'.scoped': '<a href="/second-link">Second link</a>'
+		}
+	]);
+
+	let terms = dom(`
 		<dl>
 			<dt><a href='#ref1'>First term</a></dt>
 			<dd>First definition</dd>
@@ -126,7 +177,7 @@ tape('README examples', t => {
 			terms,
 			`dt { 
 			a { @href, @.textContent },
-			:scope + dd { @.textContent }
+			:scope + dd @.textContent
 		}`
 		),
 		[
@@ -155,7 +206,7 @@ tape('README examples', t => {
 });
 
 tape('aliases', t => {
-	let table = document(`
+	let table = dom(`
 		<table>
 		  <tbody>
 		    <tr title='Row 1'>
@@ -220,10 +271,10 @@ tape('aliases', t => {
 });
 
 tape('Netscape Bookmark File', t => {
-	let nbf = document(`
+	let nbf = dom(`
 		<dl>
 			<dt><a href='/link' add_date='123'>Link title</a></dt>
-			<dd>Description</dd>
+			<dd name='descr'>Description</dd>
 		</dl>
 	`);
 
@@ -231,14 +282,31 @@ tape('Netscape Bookmark File', t => {
 		qsx(
 			nbf,
 			`dt { 
-				^ a { @add_date } >> dateAdded,  
-				^ :scope + dd { @.textContent } >> description
+				^ a @add_date >> dateAdded,  
+				^ :scope + dd @.textContent >> description
 			}`
 		),
 		[
 			{
 				dateAdded: '123',
 				description: 'Description'
+			}
+		]
+	);
+
+	t.deepEqual(
+		qsx(
+			nbf,
+			`dt { 
+				^ a @add_date >> dateAdded,  
+				:scope + dd { @.textContent, @name } >> .
+			}`
+		),
+		[
+			{
+				dateAdded: '123',
+				name: 'descr',
+				'.textContent': 'Description'
 			}
 		]
 	);

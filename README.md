@@ -4,6 +4,8 @@ Extended CSS selectors for querying the DOM and extracting parts of it. Used by 
 
 ## Installation
 
+The library is currently packaged in CJS (CommonJS) format, for Node.js.
+
 ```bash
 # with npm
 npm install qsx
@@ -23,15 +25,41 @@ In Node.js, which lacks a built-in DOM environment, you can use [`jsdom`](https:
 
 ## The query language
 
-`qsx` works like [`Element.querySelectorAll`](https://developer.mozilla.org/en-US/docs/Web/API/Element/querySelectorAll), but returns a JSON array instead of a `NodeList`, and adds some syntax that makes it useful for extracting things from HTML.
+If you're familiar with CSS selectors and [`Element.querySelectorAll`](https://developer.mozilla.org/en-US/docs/Web/API/Element/querySelectorAll), you are mostly good to go. `qsx` introduces only a few differences and extensions, listed below.
 
-The additional features are listed below.
+### Commas select parralel data
 
-### Sub-scopes
+The CSS selector `h2, h3` matches all elements that are either an `h2` or an `h3`. In `qsx`, however, it selects all `h2` elements, and all `h3` elements, in separate arrays.
+
+```html
+<h2>Installation</h2>
+<h3>With npm</h3>
+<h3>With yarn</h3>
+<h2>Usage</h2>
+<h3>From the command-line</h3>
+
+<script>
+
+	document.querySelectorAll('h2, h3');
+	// =>
+	['<h2>Installation</h2>', '<h3>With npm</h3>', ...]
+
+	qsx(document, 'h2, h3');
+	// =>
+	[
+		['<h2>Installation</h2>', '<h2>Usage</h2>'],
+		['<h3>With npm</h3>', '<h3>With yarn</h3>', ...]
+	]
+</script>
+```
+
+> Note: The [`:is()` pseudo-class](https://developer.mozilla.org/en-US/docs/Web/CSS/:is) would have provided a mechanism to restore the CSS semantics to the comma. `qsx(el, ':is(h2, h3)')` could have been used to mean `h2, h3`. Unfortunately, at the moment it's unevenly implemented across browsers [and in `jsdom`](https://github.com/jsdom/jsdom/issues/3013).
+
+### Parentheses introduce sub-scopes
 
 Whenever you use a pair of parantheses `{...}`, you create a sub-scope.
 
-On the HTML document:
+Here's a query to pick the first and last columns off each row in the table below:
 
 ```html
 <table>
@@ -50,17 +78,15 @@ On the HTML document:
 		</tr>
 	</tbody>
 </table>
-```
 
-A query to pick the first and last columns off each row in the table:
-
-```js
-qsx(document, `tr { :scope > td:first-child, :scope > td:last-child }`);
-// =>
-[
-	[['<td>1.1</td>'], ['<td>1.4</td>']],
-	[['<td>2.1</td>'], ['<td>2.4</td>']]
-];
+<script>
+	qsx(document, `tr { :scope > td:first-child, :scope > td:last-child }`);
+	// =>
+	[
+		[['<td>1.1</td>'], ['<td>1.4</td>']],
+		[['<td>2.1</td>'], ['<td>2.4</td>']]
+	];
+</script>
 ```
 
 Here's the equivalent query in vanilla `querySelectorAll` and JavaScript:
@@ -80,24 +106,22 @@ By default, for each leaf element in the query, `qsx()` returns its `.outerHTML`
 -   `@attr` extracts the `attr` HTML attribute via `el.getAttribute('attr')`;
 -   `@.prop` reads the `prop` DOM property via `el.prop`.
 
-Given the markup:
+This query extracts the `href` and label off each anchor element:
 
 ```html
 <ul>
 	<li title="item 1"><a href="/first-link">First link</a></li>
 	<li title="item 2"><a href="/second-link">Second link</a></li>
 </ul>
-```
 
-This query extracts the `href` and label off each anchor element:
-
-```js
-qsx(document, `a { @href, @.textContent }`);
-// =>
-[
-	{ href: '/first-link', '.textContent': 'First link' },
-	{ href: '/second-link', '.textContent': 'Second link' }
-];
+<script>
+	qsx(document, `a { @href, @.textContent }`);
+	// =>
+	[
+		{ href: '/first-link', '.textContent': 'First link' },
+		{ href: '/second-link', '.textContent': 'Second link' }
+	];
+</script>
 ```
 
 Notice that, to prevent collisions between attribute and property names, the latter are always prefixed with `.` in the resulting JSON, similar to how they were defined in the query.
@@ -118,11 +142,11 @@ qsx(document, `li { a, @title }`);
 [
 	{
 		title: 'item 1',
-		'.scoped': [['<a href="/first-link">First link</a>']]
+		'.scoped': ['<a href="/first-link">First link</a>']
 	},
 	{
 		title: 'item 2',
-		'.scoped': [['<a href="/second-link">Second link</a>']]
+		'.scoped': ['<a href="/second-link">Second link</a>']
 	}
 ];
 ```
@@ -141,57 +165,36 @@ In stock `Element.querySelectorAll`, the `:scope` selector cannot be combined wi
 	<dt><a href="#ref2">Second term</a></dt>
 	<dd>Second definition</dd>
 </dl>
-```
-
-```js
-qsx(
-	document,
-	`dt { 
+<script>
+	qsx(
+		document,
+		`dt { 
 	a { @href, @.textContent },
 	:scope + dd { @.textContent }
 }`
-);
-// =>
-[
+	);
+	// =>
 	[
 		[
-			{
-				href: '#ref1',
-				'.textContent': 'First term'
-			}
+			[
+				{
+					href: '#ref1',
+					'.textContent': 'First term'
+				}
+			],
+			['First definition']
 		],
-		['First definition']
-	],
-	[
 		[
-			{
-				href: '#ref2',
-				'.textContent': 'Second term'
-			}
-		],
-		['Second definition']
-	]
-];
-```
-
-### Pick first query result with `^`
-
-For more complex queries where there resulting JSON contains several nested arrays, but for which you want to select a single element, you can prefix a selector with `^` to select just the first matching element — like `querySelector()` rather than `querySelectorAll()`.
-
-```js
-qsx(document, `li { ^ a, @title }`);
-
-// =>
-[
-	{
-		title: 'item 1',
-		'.scoped': ['<a href="/first-link">First link</a>']
-	},
-	{
-		title: 'item 2',
-		'.scoped': ['<a href="/second-link">Second link</a>']
-	}
-];
+			[
+				{
+					href: '#ref2',
+					'.textContent': 'Second term'
+				}
+			],
+			['Second definition']
+		]
+	];
+</script>
 ```
 
 ### Alias selectors with `>>`
@@ -215,3 +218,30 @@ Alias whole `.scoped` object:
 ```js
 qsx(el, 'tr { @title, td:first-child, td:last-child } >> cells');
 ```
+
+The special alias `.` will cause the object to be merged into the current context.
+
+### Pick first result with `^`
+
+For more complex queries where there resulting JSON contains several nested arrays, but for which you want to select a single element, you can prefix a selector with `^` to select just the first matching element — like `querySelector()` rather than `querySelectorAll()`.
+
+```js
+qsx(document, `li { ^ a, @title }`);
+
+// =>
+[
+	{
+		title: 'item 1',
+		'.scoped': '<a href="/first-link">First link</a>'
+	},
+	{
+		title: 'item 2',
+		'.scoped': '<a href="/second-link">Second link</a>'
+	}
+];
+```
+
+Some other situations will trigger first-result behavior even in the absence of the `^` prefix:
+
+-   When requesting a direct attribute in a sub-scope: `a { @href }`
+-   When using the `.` alias: `a { @href, @.textContent } >> .`
