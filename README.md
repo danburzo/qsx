@@ -54,9 +54,9 @@ The CSS selector `h2, h3` matches all elements that are either an `h2` or an `h3
 
 > Note: The [`:is()` pseudo-class](https://developer.mozilla.org/en-US/docs/Web/CSS/:is) would have provided a mechanism to restore the CSS semantics to the comma. `qsx(el, ':is(h2, h3)')` could have been used to mean `h2, h3`. Unfortunately, at the moment it's unevenly implemented across browsers [and in `jsdom`](https://github.com/jsdom/jsdom/issues/3013).
 
-### Parentheses introduce sub-scopes
+### Curly brackets introduce sub-scopes
 
-Whenever you use a pair of parantheses `{...}`, you create a sub-scope.
+Whenever you use a pair of curly brackets `{...}`, you create a sub-scope.
 
 Here's a query to pick the first and last columns off each row in the table below:
 
