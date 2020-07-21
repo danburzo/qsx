@@ -135,3 +135,31 @@ tape('commas and CSS semantics', t => {
 	);
 	t.end();
 });
+
+tape('Syntax errors', t => {
+	t.throws(() => {
+		getAST('a { @href }}');
+	}, /Unexpected \}/);
+
+	t.throws(() => {
+		getAST('li { @title, a { @href }');
+	}, /Missing \}/);
+
+	t.throws(() => {
+		getAST('a:is(a, b))');
+	}, /Unexpected \)/);
+
+	t.throws(() => {
+		getAST('li:not(a, b');
+	}, /Missing \)/);
+
+	t.throws(() => {
+		getAST('a @{href}');
+	}, /after \@/);
+
+	t.throws(() => {
+		getAST('a >>{href}');
+	}, /after \>\>/);
+
+	t.end();
+});

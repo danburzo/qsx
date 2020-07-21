@@ -16,7 +16,10 @@ const TOKENS_REGEX = new RegExp(
 	'g'
 );
 
+const STATE_INITIAL = null;
+
 module.exports = {
 	TOKENS,
-	TOKENS_REGEX
+	TOKENS_REGEX,
+	STATE_INITIAL
 };
