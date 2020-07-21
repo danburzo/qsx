@@ -39,7 +39,6 @@ The CSS selector `h2, h3` matches all elements that are either an `h2` or an `h3
 <h3>From the command-line</h3>
 
 <script>
-
 	document.querySelectorAll('h2, h3');
 	// =>
 	['<h2>Installation</h2>', '<h3>With npm</h3>', ...]
@@ -126,15 +125,7 @@ This query extracts the `href` and label off each anchor element:
 
 Notice that, to prevent collisions between attribute and property names, the latter are always prefixed with `.` in the resulting JSON, similar to how they were defined in the query.
 
-To simplify the returned JSON structure, whenever for a leaf element we return a single piece of information — be it the default `outerHTML` or a single attribute — we return it as a value rather than an object with a single key:
-
-```js
-qsx(document, `a { @.textContent }`);
-// =>
-['First link', 'Second link'];
-```
-
-Attributes, properties and scoped selectors can be combined at will. When present among otehr attributes / properties, scoped selectors are added under the `.scoped` key:
+Attributes, properties and scoped selectors can be combined at will. When present among other attributes / properties, scoped selectors are added under the `.scoped` key:
 
 ```js
 qsx(document, `li { a, @title }`);
@@ -169,9 +160,9 @@ In stock `Element.querySelectorAll`, the `:scope` selector cannot be combined wi
 	qsx(
 		document,
 		`dt { 
-	a { @href, @.textContent },
-	:scope + dd { @.textContent }
-}`
+		a { @href, @.textContent },
+		:scope + dd { @.textContent }
+	}`
 	);
 	// =>
 	[
