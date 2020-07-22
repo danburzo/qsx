@@ -1,4 +1,4 @@
-function traverse($root, tree) {
+export default function traverse($root, tree) {
 	if (Array.isArray($root)) {
 		return $root.map($r => traverse($r, tree));
 	}
@@ -9,5 +9,3 @@ function traverse($root, tree) {
 	}
 	return res;
 }
-
-export default traverse;

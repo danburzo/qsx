@@ -1,7 +1,6 @@
 import tape from 'tape';
-import dom from './util-dom.js';
-import astToJson from './util-ast-to-json.js';
-import getAST from '../src/ast-get.js';
+import astToJson from './util-ast-to-json';
+import getAST from '../src/ast-get';
 
 tape('getAST()', t => {
 	t.deepEqual(astToJson(...getAST('a @href')), {

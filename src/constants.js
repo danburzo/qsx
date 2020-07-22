@@ -1,4 +1,4 @@
-const TOKENS = {
+export const TOKENS = {
 	GROUP_START: '{',
 	GROUP_END: '}',
 	SEP: ',',
@@ -9,17 +9,11 @@ const TOKENS = {
 	ALIAS: '>>'
 };
 
-const TOKENS_REGEX = new RegExp(
+export const TOKENS_REGEX = new RegExp(
 	`\\s*(${Object.values(TOKENS)
 		.map(v => `\\${v}`)
 		.join('|')})\\s*`,
 	'g'
 );
 
-const STATE_INITIAL = null;
-
-module.exports = {
-	TOKENS,
-	TOKENS_REGEX,
-	STATE_INITIAL
-};
+export const STATE_INITIAL = null;

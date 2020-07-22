@@ -1,5 +1,4 @@
-const SymbolTree = require('symbol-tree');
-let query = require('./query.js');
+import query from './query';
 
 /*
 	Apply a query to an element
@@ -10,7 +9,7 @@ let query = require('./query.js');
 	@param tree — reference to the query AST
 	@param clean — (bool) 
  */
-function applyAST(root_el, $node, tree) {
+export default function applyAST(root_el, $node, tree) {
 	/*
 		Start by fetching the elements matching 
 		the current selector. Attribute selectors don't have a context 
@@ -69,5 +68,3 @@ function applyAST(root_el, $node, tree) {
 	let first = $node.first || !$node.ctx || $node.alias === '.';
 	return first ? matches[0] : matches;
 }
-
-module.exports = applyAST;

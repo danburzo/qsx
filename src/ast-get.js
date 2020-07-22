@@ -1,11 +1,11 @@
-const SymbolTree = require('symbol-tree');
-const { TOKENS, TOKENS_REGEX, STATE_INITIAL } = require('./constants.js');
+import SymbolTree from 'symbol-tree';
+import { TOKENS, TOKENS_REGEX, STATE_INITIAL } from './constants';
 
 /*
 	Returns the AST of a selector
 	-----------------------------
  */
-function getAST(selector) {
+export default function getAST(selector) {
 	const tree = new SymbolTree();
 	const node = (anon_route = false) => {
 		let res = { ctx: '' };
@@ -124,5 +124,3 @@ function getAST(selector) {
 
 	return [$root, tree];
 }
-
-module.exports = getAST;

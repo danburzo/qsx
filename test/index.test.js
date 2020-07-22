@@ -1,6 +1,6 @@
 import tape from 'tape';
-import qsx from '../src/index.js';
-import dom from './util-dom.js';
+import qsx from '../src/index';
+import dom from './util-dom';
 
 tape('qsx()', t => {
 	let doc = dom(`

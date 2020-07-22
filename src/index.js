@@ -1,9 +1,9 @@
-const getAST = require('./ast-get.js');
-const applyAST = require('./ast-apply.js');
+import getAST from './ast-get.js';
+import applyAST from './ast-apply';
 
-module.exports = function qsx(el, selector) {
+export default function qsx(el, selector) {
 	let [$root, tree] = getAST(selector);
 	return Array.isArray($root)
 		? $root.map($r => applyAST(el, $r, tree))
 		: applyAST(el, $root, tree);
-};
+}

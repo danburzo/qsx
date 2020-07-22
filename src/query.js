@@ -8,7 +8,7 @@
 		:scope + el
 		:scope ~ el
  */
-function query(el, selector) {
+export default function query(el, selector) {
 	let scope_combi_re = /^\s*:scope\s+(\+|\~)(.+)/;
 	let m = selector.match(scope_combi_re);
 	if (!m) {
@@ -22,7 +22,7 @@ function query(el, selector) {
 	}
 	if (m[1] === '~') {
 		// subsequent sibling combinator
-		els = [];
+		let els = [];
 		let sibling = el.nextElementSibling;
 		while (sibling) {
 			if (sibling.matches(m[2])) {
@@ -34,5 +34,3 @@ function query(el, selector) {
 	}
 	throw new Error(`Invalid combinator: ${m[1]}`);
 }
-
-module.exports = query;
