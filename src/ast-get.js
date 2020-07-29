@@ -79,7 +79,11 @@ export default function getAST(selector) {
 				break;
 			case TOKENS.FIRST:
 				assertInitialState();
-				$curr.first = true;
+				if ($curr.ctx) {
+					$curr.ctx += token;
+				} else {
+					$curr.first = true;
+				}
 				break;
 			case TOKENS.ALIAS:
 				assertInitialState();

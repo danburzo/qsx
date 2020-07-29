@@ -162,3 +162,29 @@ tape('Syntax errors', t => {
 
 	t.end();
 });
+
+tape('^ (first)', t => {
+	t.deepEqual(
+		astToJson(...getAST('a[href^="#"]')),
+		{
+			ctx: 'a[href^="#"]'
+		},
+		'ignore ^ unless first token'
+	);
+
+	t.deepEqual(
+		astToJson(...getAST('a { ^ span }')),
+		{
+			ctx: 'a',
+			children: [
+				{
+					ctx: 'span',
+					first: true
+				}
+			]
+		},
+		'identify ^ as first'
+	);
+
+	t.end();
+});
