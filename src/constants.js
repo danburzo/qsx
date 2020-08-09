@@ -6,12 +6,19 @@ export const TOKENS = {
 	FUNC_END: ')',
 	ATTR: '@',
 	FIRST: '^',
-	ALIAS: '>>'
+	ALIAS: '=>',
+	ALIAS_LEGACY: '>>',
+	SPREAD: '...'
 };
 
 export const TOKENS_REGEX = new RegExp(
 	`\\s*(${Object.values(TOKENS)
-		.map(v => `\\${v}`)
+		.map(v =>
+			v
+				.split('')
+				.map(ch => `\\${ch}`)
+				.join('')
+		)
 		.join('|')})\\s*`,
 	'g'
 );

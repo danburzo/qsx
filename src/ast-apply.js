@@ -56,7 +56,9 @@ export default function applyAST(root_el, $node, tree) {
 			if (Object.keys(result).length === 0) {
 				return sequential;
 			}
-			result[$node.alias || '.scoped'] = sequential;
+			result[
+				$node.alias && $node.alias !== '.' ? $node.alias : '.scoped'
+			] = sequential;
 		}
 		return result;
 	});

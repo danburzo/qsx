@@ -65,7 +65,7 @@ tape('README examples', t => {
 	);
 
 	t.deepEqual(
-		qsx(headings, 'h2 >> h2s, h3 >> h3s'),
+		qsx(headings, 'h2 => h2s, h3 => h3s'),
 		{
 			h2s: ['<h2>Installation</h2>', '<h2>Usage</h2>'],
 			h3s: [
@@ -226,7 +226,7 @@ tape('aliases', t => {
 	`);
 
 	t.deepEqual(
-		qsx(table, 'tr { ^ td:first-child >> first, ^ td:last-child >> last }'),
+		qsx(table, 'tr { ^ td:first-child => first, ^ td:last-child => last }'),
 		[
 			{ first: '<td>1.1</td>', last: '<td>1.4</td>' },
 			{ first: '<td>2.1</td>', last: '<td>2.4</td>' }
@@ -236,7 +236,20 @@ tape('aliases', t => {
 	t.deepEqual(
 		qsx(
 			table,
-			'tr { @title >> caption, ^ td:first-child, ^ td:last-child } >> cells'
+			'tr { td:first-child => first, td:last-child => last } => .'
+		),
+		{ first: ['<td>1.1</td>'], last: ['<td>1.4</td>'] }
+	);
+
+	t.deepEqual(
+		qsx(table, 'tr ...{ td:first-child => first, td:last-child }'),
+		{ first: ['<td>1.1</td>'], '.scoped': ['<td>1.4</td>'] }
+	);
+
+	t.deepEqual(
+		qsx(
+			table,
+			'tr { @title => caption, ^ td:first-child, ^ td:last-child } => cells'
 		),
 		[
 			{
@@ -253,7 +266,7 @@ tape('aliases', t => {
 	t.deepEqual(
 		qsx(
 			table,
-			'tr >> cells { @title >> caption, ^ td:first-child, ^ td:last-child }'
+			'tr => cells { @title => caption, ^ td:first-child, ^ td:last-child }'
 		),
 		[
 			{
@@ -282,8 +295,8 @@ tape('Netscape Bookmark File', t => {
 		qsx(
 			nbf,
 			`dt { 
-				^ a @add_date >> dateAdded,  
-				^ :scope + dd @.textContent >> description
+				^ a @add_date => dateAdded,  
+				^ :scope + dd @.textContent => description
 			}`
 		),
 		[
@@ -298,8 +311,8 @@ tape('Netscape Bookmark File', t => {
 		qsx(
 			nbf,
 			`dt { 
-				^ a @add_date >> dateAdded,  
-				:scope + dd { @.textContent, @name } >> .
+				^ a @add_date => dateAdded,  
+				:scope + dd ...{ @.textContent, @name }
 			}`
 		),
 		[

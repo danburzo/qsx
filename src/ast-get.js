@@ -89,6 +89,14 @@ export default function getAST(selector) {
 				assertInitialState();
 				state = TOKENS.ALIAS;
 				break;
+			case TOKENS.ALIAS_LEGACY:
+				assertInitialState();
+				state = TOKENS.ALIAS_LEGACY;
+				break;
+			case TOKENS.SPREAD:
+				assertInitialState();
+				$curr.alias = '.';
+				break;
 			default:
 				switch (state) {
 					case TOKENS.ATTR:
@@ -99,6 +107,7 @@ export default function getAST(selector) {
 						state = STATE_INITIAL;
 						break;
 					case TOKENS.ALIAS:
+					case TOKENS.ALIAS_LEGACY:
 						$curr.alias = token.trim();
 						state = STATE_INITIAL;
 						break;

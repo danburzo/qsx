@@ -8,7 +8,7 @@ tape('getAST()', t => {
 		attr: 'href'
 	});
 
-	t.deepEqual(astToJson(...getAST('a @href >> url')), {
+	t.deepEqual(astToJson(...getAST('a @href => url')), {
 		ctx: 'a',
 		alias: 'url',
 		attr: 'href'
@@ -41,7 +41,7 @@ tape('getAST()', t => {
 		]
 	});
 
-	t.deepEqual(astToJson(...getAST('a { @href >> url }')), {
+	t.deepEqual(astToJson(...getAST('a { @href => url }')), {
 		ctx: 'a',
 		children: [
 			{
@@ -53,7 +53,7 @@ tape('getAST()', t => {
 	});
 
 	t.deepEqual(
-		astToJson(...getAST('a { @href >> url, @.textContent >> text }')),
+		astToJson(...getAST('a { @href >> url, @.textContent => text }')),
 		{
 			ctx: 'a',
 			children: [

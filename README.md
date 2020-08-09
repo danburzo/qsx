@@ -188,29 +188,41 @@ In stock `Element.querySelectorAll`, the `:scope` selector cannot be combined wi
 </script>
 ```
 
-### Alias selectors with `>>`
+### Alias selectors with `=>`
 
-Keys in the resulting JSON can be aliased to any other name, using `>> alias`.
+Keys in the resulting JSON can be aliased to any other name, using `=> alias`.
 
 Alias HTML attributes and DOM properties:
 
 ```js
-qsx(el, 'a { @href >> url, @.textContent >> text }');
+qsx(el, 'a { @href => url, @.textContent => text }');
 ```
 
 Alias individual scoped selectors:
 
 ```js
-qsx(el, 'tr { td:first-child >> first, td:last-child >> last }');
+qsx(el, 'tr { td:first-child => first, td:last-child => last }');
 ```
 
 Alias whole `.scoped` object:
 
 ```js
-qsx(el, 'tr { @title, td:first-child, td:last-child } >> cells');
+qsx(el, 'tr { @title, td:first-child, td:last-child } => cells');
 ```
 
-The special alias `.` will cause the object to be merged into the current context.
+#### Spread operator
+
+The special alias `.` will cause the object to be merged into the current context:
+
+```js
+qsx(el, 'tr { td:first-child, td:last-child } => .');
+```
+
+Alternatively, you can use the `...` (spread) operator for the same purpose:
+
+```js
+qsx(el, 'tr ...{ td:first-child, td:last-child }');
+```
 
 ### Pick first result with `^`
 
@@ -235,4 +247,4 @@ qsx(document, `li { ^ a, @title }`);
 Some other situations will trigger first-result behavior even in the absence of the `^` prefix:
 
 -   When requesting a direct attribute in a sub-scope: `a { @href }`
--   When using the `.` alias: `a { @href, @.textContent } >> .`
+-   When using the `.` alias (as in `a { @href, @.textContent } => .`) or the spread `...` operator
