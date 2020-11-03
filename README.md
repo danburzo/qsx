@@ -7,11 +7,7 @@ Extended CSS selectors for querying the DOM and extracting parts of it. Used by 
 The library is currently packaged in CJS (CommonJS) format, for Node.js.
 
 ```bash
-# with npm
 npm install qsx
-
-# with yarn
-yarn add qsx
 ```
 
 ## Usage
