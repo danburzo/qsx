@@ -33,7 +33,7 @@
 		}
 	},
 	"dependencies": {
-		"symbol-tree": "^3.2.4"
+		"selery": "0.0.10"
 	},
 	"prettier": {
 		"bracketSpacing": true,
