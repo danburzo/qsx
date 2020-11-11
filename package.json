@@ -33,6 +33,7 @@
 		}
 	},
 	"dependencies": {
+		"selery": "0.0.10",
 		"symbol-tree": "^3.2.4"
 	},
 	"prettier": {
