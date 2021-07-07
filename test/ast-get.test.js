@@ -188,3 +188,20 @@ tape('^ (first)', t => {
 
 	t.end();
 });
+
+tape('read attributes @*', t => {
+	t.deepEqual(astToJson(...getAST('a @*')), { ctx: 'a', attr: '*' });
+
+	t.deepEqual(
+		astToJson(...getAST('a { @* => . }')),
+		{ ctx: 'a', children: [{ ctx: '', attr: '*', alias: '.' }] },
+		'attribute spread'
+	);
+
+	t.deepEqual(
+		astToJson(...getAST('a { ...@* }')),
+		{ ctx: 'a', children: [{ ctx: '', attr: '*', alias: '.' }] },
+		'attribute spread ellipsis'
+	);
+	t.end();
+});

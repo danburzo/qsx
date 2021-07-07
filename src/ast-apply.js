@@ -20,7 +20,9 @@ export default function applyAST(root_el, $node, tree) {
 		// Attribute selector
 		if ($node.attr) {
 			let key = $node.attr;
-			return key.indexOf('.') === 0
+			return key === '*'
+				? namedNodeMapToObject(element.attributes)
+				: key.indexOf('.') === 0
 				? element[key.slice(1)]
 				: element.getAttribute(key);
 		}
@@ -69,4 +71,15 @@ export default function applyAST(root_el, $node, tree) {
 	 */
 	let first = $node.first || !$node.ctx || $node.alias === '.';
 	return first ? matches[0] : matches;
+}
+
+function namedNodeMapToObject(map) {
+	let res = {},
+		it;
+	for (let i = 0; i < map.length; i++) {
+		it = map.item(i);
+		res[it.prefix ? `${it.prefix}:${it.localName}` : it.localName] =
+			it.value;
+	}
+	return res;
 }

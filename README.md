@@ -98,8 +98,9 @@ arr(document.querySelectorAll('tr')).map(tr => [
 
 By default, for each leaf element in the query, `qsx()` returns its `.outerHTML`. Instead, we can extract specific attributes and properties:
 
--   `@attr` extracts the `attr` HTML attribute via `el.getAttribute('attr')`;
--   `@.prop` reads the `prop` DOM property via `el.prop`.
+-   `@attr` (the attribute accessor) extracts the `attr` HTML attribute via `el.getAttribute('attr')`;
+-   `@.prop` (the property accessor) reads the `prop` DOM property via `el.prop`;
+-   `@*` (the attribute wildcard) extracts all the HTML attributes into an object via `el.attributes`.
 
 This query extracts the `href` and label off each anchor element:
 

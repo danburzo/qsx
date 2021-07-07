@@ -326,3 +326,67 @@ tape('Netscape Bookmark File', t => {
 
 	t.end();
 });
+
+tape('Read element attributes', t => {
+	let links = dom`
+		<a href="#dummy" data-hello="world" attr="value">text1</a>
+		<a href="#dummy2" data-hello="world2" attr="value2">text2</a>
+	`;
+
+	t.deepEqual(
+		qsx(links, 'a @*'),
+		[
+			{ href: '#dummy', 'data-hello': 'world', attr: 'value' },
+			{ href: '#dummy2', 'data-hello': 'world2', attr: 'value2' }
+		],
+		'used at top level'
+	);
+
+	t.deepEqual(
+		qsx(links, 'a { @* => . }'),
+		[
+			{ href: '#dummy', 'data-hello': 'world', attr: 'value' },
+			{ href: '#dummy2', 'data-hello': 'world2', attr: 'value2' }
+		],
+		'spread via alias'
+	);
+
+	t.deepEqual(
+		qsx(links, 'a { ...@* }'),
+		[
+			{ href: '#dummy', 'data-hello': 'world', attr: 'value' },
+			{ href: '#dummy2', 'data-hello': 'world2', attr: 'value2' }
+		],
+		'spread via ellipsis'
+	);
+
+	t.deepEqual(
+		qsx(links, 'a { @.textContent => _tc, ...@* }'),
+		[
+			{
+				_tc: 'text1',
+				href: '#dummy',
+				'data-hello': 'world',
+				attr: 'value'
+			},
+			{
+				_tc: 'text2',
+				href: '#dummy2',
+				'data-hello': 'world2',
+				attr: 'value2'
+			}
+		],
+		'spread onto existing object'
+	);
+
+	t.deepEqual(
+		qsx(links, 'a { ...@*, @.textContent => href }'),
+		[
+			{ href: 'text1', 'data-hello': 'world', attr: 'value' },
+			{ href: 'text2', 'data-hello': 'world2', attr: 'value2' }
+		],
+		'spread gets overwriten by subsequent properties'
+	);
+
+	t.end();
+});

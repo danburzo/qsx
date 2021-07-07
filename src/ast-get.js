@@ -101,7 +101,7 @@ export default function getAST(selector) {
 				switch (state) {
 					case TOKENS.ATTR:
 						$curr.attr = token.trim();
-						if (!$curr.ctx) {
+						if (!$curr.ctx && !$curr.alias) {
 							$curr.alias = $curr.attr;
 						}
 						state = STATE_INITIAL;
