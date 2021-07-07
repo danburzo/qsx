@@ -1,6 +1,6 @@
 {
 	"name": "qsx",
-	"version": "3.2.0",
+	"version": "3.3.0",
 	"main": "build/qsx.umd.js",
 	"module": "build/qsx.es.js",
 	"source": "src/index.js",
