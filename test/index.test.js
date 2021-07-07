@@ -327,10 +327,12 @@ tape('Netscape Bookmark File', t => {
 	t.end();
 });
 
-tape('Read element attributes', t => {
+tape('attribute wildcard', t => {
 	let links = dom`
+	<div>
 		<a href="#dummy" data-hello="world" attr="value">text1</a>
 		<a href="#dummy2" data-hello="world2" attr="value2">text2</a>
+	</div>
 	`;
 
 	t.deepEqual(
@@ -386,6 +388,15 @@ tape('Read element attributes', t => {
 			{ href: 'text2', 'data-hello': 'world2', attr: 'value2' }
 		],
 		'spread gets overwriten by subsequent properties'
+	);
+
+	t.deepEqual(
+		qsx(links, '^div { a @* }'),
+		[
+			{ href: '#dummy', 'data-hello': 'world', attr: 'value' },
+			{ href: '#dummy2', 'data-hello': 'world2', attr: 'value2' }
+		],
+		'attribute wildcard as part of selector'
 	);
 
 	t.end();
