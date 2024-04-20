@@ -1,4 +1,4 @@
-import query from './query';
+import query from './query.js';
 
 /*
 	Apply a query to an element
@@ -23,8 +23,8 @@ export default function applyAST(root_el, $node, tree) {
 			return key === '*'
 				? namedNodeMapToObject(element.attributes)
 				: key.indexOf('.') === 0
-				? element[key.slice(1)]
-				: element.getAttribute(key);
+					? element[key.slice(1)]
+					: element.getAttribute(key);
 		}
 
 		// Element selector, with possible children
@@ -58,9 +58,8 @@ export default function applyAST(root_el, $node, tree) {
 			if (Object.keys(result).length === 0) {
 				return sequential;
 			}
-			result[
-				$node.alias && $node.alias !== '.' ? $node.alias : '.scoped'
-			] = sequential;
+			result[$node.alias && $node.alias !== '.' ? $node.alias : '.scoped'] =
+				sequential;
 		}
 		return result;
 	});
@@ -78,8 +77,7 @@ function namedNodeMapToObject(map) {
 		it;
 	for (let i = 0; i < map.length; i++) {
 		it = map.item(i);
-		res[it.prefix ? `${it.prefix}:${it.localName}` : it.localName] =
-			it.value;
+		res[it.prefix ? `${it.prefix}:${it.localName}` : it.localName] = it.value;
 	}
 	return res;
 }
