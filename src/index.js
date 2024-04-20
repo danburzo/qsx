@@ -1,5 +1,5 @@
 import getAST from './ast-get.js';
-import applyAST from './ast-apply';
+import applyAST from './ast-apply.js';
 
 export default function qsx(el, selector) {
 	let [$root, tree] = getAST(selector);

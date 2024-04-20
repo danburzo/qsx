@@ -1,8 +1,9 @@
-import tape from 'tape';
-import qsx from '../src/index';
-import dom from './util-dom';
+import test from 'node:test';
+import assert from 'node:assert';
+import qsx from '../src/index.js';
+import { dom } from './_util.js';
 
-tape('qsx()', t => {
+test('qsx()', () => {
 	let doc = dom(`
 	<dl>
 		<dt><a href='#1' title='Go to term 1'>Term 1</a></dt>
@@ -16,7 +17,7 @@ tape('qsx()', t => {
 	</dl>
 `);
 
-	t.deepEqual(qsx(doc, 'dt { a, :scope + dd }'), [
+	assert.deepStrictEqual(qsx(doc, 'dt { a, :scope + dd }'), [
 		[
 			[`<a href="#1" title="Go to term 1">Term 1</a>`],
 			[`<dd><strong>Very</strong>Def 1</dd>`]
@@ -28,21 +29,19 @@ tape('qsx()', t => {
 		]
 	]);
 
-	t.deepEqual(qsx(doc, 'a @href'), ['#1', '#wo', '#2']);
-	t.end();
+	assert.deepStrictEqual(qsx(doc, 'a @href'), ['#1', '#wo', '#2']);
 });
 
-tape('qsx() dont include .scoped when only attrs', t => {
+test('qsx() dont include .scoped when only attrs', () => {
 	let doc = dom(`
 		<img src='/path' alt='alternative text'/>
 	`);
-	t.deepEqual(qsx(doc, 'img { @alt, @src }'), [
+	assert.deepStrictEqual(qsx(doc, 'img { @alt, @src }'), [
 		{ alt: 'alternative text', src: '/path' }
 	]);
-	t.end();
 });
 
-tape('README examples', t => {
+test('README examples', () => {
 	let headings = dom`
 		<h2>Installation</h2>
 		<h3>With npm</h3>
@@ -51,33 +50,25 @@ tape('README examples', t => {
 		<h3>From the command-line</h3>
 	`;
 
-	t.deepEqual(
-		qsx(headings, 'h2, h3'),
+	assert.deepStrictEqual(qsx(headings, 'h2, h3'), [
+		['<h2>Installation</h2>', '<h2>Usage</h2>'],
 		[
-			['<h2>Installation</h2>', '<h2>Usage</h2>'],
-			[
-				'<h3>With npm</h3>',
-				'<h3>With yarn</h3>',
-				'<h3>From the command-line</h3>'
-			]
-		],
-		'commas select parallel sets of headings'
-	);
+			'<h3>With npm</h3>',
+			'<h3>With yarn</h3>',
+			'<h3>From the command-line</h3>'
+		]
+	]);
 
-	t.deepEqual(
-		qsx(headings, 'h2 => h2s, h3 => h3s'),
-		{
-			h2s: ['<h2>Installation</h2>', '<h2>Usage</h2>'],
-			h3s: [
-				'<h3>With npm</h3>',
-				'<h3>With yarn</h3>',
-				'<h3>From the command-line</h3>'
-			]
-		},
-		'commas select parallel sets of headings (with aliases)'
-	);
+	assert.deepStrictEqual(qsx(headings, 'h2 => h2s, h3 => h3s'), {
+		h2s: ['<h2>Installation</h2>', '<h2>Usage</h2>'],
+		h3s: [
+			'<h3>With npm</h3>',
+			'<h3>With yarn</h3>',
+			'<h3>From the command-line</h3>'
+		]
+	});
 
-	// t.deepEqual(
+	// assert.deepStrictEqual(
 	// 	qsx(headings, ':is(h2, h3)'),
 	// 	['<h2>Installation</h2>', '<h3>With npm</h3>', '<h3>With yarn</h3>', '<h2>Usage</h2>', '<h3>From the command-line</h3>'],
 	// 	':is() behaves like normal CSS semantics'
@@ -102,7 +93,7 @@ tape('README examples', t => {
 </table>
 	`);
 
-	t.deepEqual(
+	assert.deepStrictEqual(
 		qsx(table, 'tr { :scope > td:first-child, :scope > td:last-child }'),
 		[
 			[['<td>1.1</td>'], ['<td>1.4</td>']],
@@ -117,19 +108,22 @@ tape('README examples', t => {
 		</ul>
 	`);
 
-	t.deepEqual(qsx(links, 'a { @href, @.textContent }'), [
+	assert.deepStrictEqual(qsx(links, 'a { @href, @.textContent }'), [
 		{ href: '/first-link', '.textContent': 'First link' },
 		{ href: '/second-link', '.textContent': 'Second link' }
 	]);
 
-	t.deepEqual(qsx(links, 'a @.textContent'), ['First link', 'Second link']);
+	assert.deepStrictEqual(qsx(links, 'a @.textContent'), [
+		'First link',
+		'Second link'
+	]);
 
-	t.deepEqual(qsx(links, 'a { @.textContent }'), [
+	assert.deepStrictEqual(qsx(links, 'a { @.textContent }'), [
 		{ '.textContent': 'First link' },
 		{ '.textContent': 'Second link' }
 	]);
 
-	t.deepEqual(qsx(links, `li { a, @title }`), [
+	assert.deepStrictEqual(qsx(links, `li { a, @title }`), [
 		{
 			title: 'item 1',
 			'.scoped': ['<a href="/first-link">First link</a>']
@@ -140,7 +134,7 @@ tape('README examples', t => {
 		}
 	]);
 
-	t.deepEqual(qsx(links, `li { a, @title }`), [
+	assert.deepStrictEqual(qsx(links, `li { a, @title }`), [
 		{
 			title: 'item 1',
 			'.scoped': ['<a href="/first-link">First link</a>']
@@ -151,7 +145,7 @@ tape('README examples', t => {
 		}
 	]);
 
-	t.deepEqual(qsx(links, `li { ^ a, @title }`), [
+	assert.deepStrictEqual(qsx(links, `li { ^ a, @title }`), [
 		{
 			title: 'item 1',
 			'.scoped': '<a href="/first-link">First link</a>'
@@ -172,7 +166,7 @@ tape('README examples', t => {
 		</dl>
 	`);
 
-	t.deepEqual(
+	assert.deepStrictEqual(
 		qsx(
 			terms,
 			`dt { 
@@ -201,11 +195,9 @@ tape('README examples', t => {
 			]
 		]
 	);
-
-	t.end();
 });
 
-tape('aliases', t => {
+test('aliases', () => {
 	let table = dom(`
 		<table>
 		  <tbody>
@@ -225,7 +217,7 @@ tape('aliases', t => {
 		</table>
 	`);
 
-	t.deepEqual(
+	assert.deepStrictEqual(
 		qsx(table, 'tr { ^ td:first-child => first, ^ td:last-child => last }'),
 		[
 			{ first: '<td>1.1</td>', last: '<td>1.4</td>' },
@@ -233,20 +225,17 @@ tape('aliases', t => {
 		]
 	);
 
-	t.deepEqual(
-		qsx(
-			table,
-			'tr { td:first-child => first, td:last-child => last } => .'
-		),
+	assert.deepStrictEqual(
+		qsx(table, 'tr { td:first-child => first, td:last-child => last } => .'),
 		{ first: ['<td>1.1</td>'], last: ['<td>1.4</td>'] }
 	);
 
-	t.deepEqual(
+	assert.deepStrictEqual(
 		qsx(table, 'tr ...{ td:first-child => first, td:last-child }'),
 		{ first: ['<td>1.1</td>'], '.scoped': ['<td>1.4</td>'] }
 	);
 
-	t.deepEqual(
+	assert.deepStrictEqual(
 		qsx(
 			table,
 			'tr { @title => caption, ^ td:first-child, ^ td:last-child } => cells'
@@ -263,7 +252,7 @@ tape('aliases', t => {
 		]
 	);
 
-	t.deepEqual(
+	assert.deepStrictEqual(
 		qsx(
 			table,
 			'tr => cells { @title => caption, ^ td:first-child, ^ td:last-child }'
@@ -279,11 +268,9 @@ tape('aliases', t => {
 			}
 		]
 	);
-
-	t.end();
 });
 
-tape('Netscape Bookmark File', t => {
+test('Netscape Bookmark File', () => {
 	let nbf = dom(`
 		<dl>
 			<dt><a href='/link' add_date='123'>Link title</a></dt>
@@ -291,12 +278,12 @@ tape('Netscape Bookmark File', t => {
 		</dl>
 	`);
 
-	t.deepEqual(
+	assert.deepStrictEqual(
 		qsx(
 			nbf,
 			`dt { 
 				^ a @add_date => dateAdded,  
-				^ :scope + dd @.textContent => description
+				^ :scope + dd @.textConten() => description
 			}`
 		),
 		[
@@ -307,7 +294,7 @@ tape('Netscape Bookmark File', t => {
 		]
 	);
 
-	t.deepEqual(
+	assert.deepStrictEqual(
 		qsx(
 			nbf,
 			`dt { 
@@ -323,11 +310,9 @@ tape('Netscape Bookmark File', t => {
 			}
 		]
 	);
-
-	t.end();
 });
 
-tape('attribute wildcard', t => {
+test('attribute wildcard', () => {
 	let links = dom`
 	<div>
 		<a href="#dummy" data-hello="world" attr="value">text1</a>
@@ -335,7 +320,7 @@ tape('attribute wildcard', t => {
 	</div>
 	`;
 
-	t.deepEqual(
+	assert.deepStrictEqual(
 		qsx(links, 'a @*'),
 		[
 			{ href: '#dummy', 'data-hello': 'world', attr: 'value' },
@@ -344,7 +329,7 @@ tape('attribute wildcard', t => {
 		'used at top level'
 	);
 
-	t.deepEqual(
+	assert.deepStrictEqual(
 		qsx(links, 'a { @* => . }'),
 		[
 			{ href: '#dummy', 'data-hello': 'world', attr: 'value' },
@@ -353,7 +338,7 @@ tape('attribute wildcard', t => {
 		'spread via alias'
 	);
 
-	t.deepEqual(
+	assert.deepStrictEqual(
 		qsx(links, 'a { ...@* }'),
 		[
 			{ href: '#dummy', 'data-hello': 'world', attr: 'value' },
@@ -362,42 +347,28 @@ tape('attribute wildcard', t => {
 		'spread via ellipsis'
 	);
 
-	t.deepEqual(
-		qsx(links, 'a { @.textContent => _tc, ...@* }'),
-		[
-			{
-				_tc: 'text1',
-				href: '#dummy',
-				'data-hello': 'world',
-				attr: 'value'
-			},
-			{
-				_tc: 'text2',
-				href: '#dummy2',
-				'data-hello': 'world2',
-				attr: 'value2'
-			}
-		],
-		'spread onto existing object'
-	);
+	assert.deepStrictEqual(qsx(links, 'a { @.textConten() => _tc, ...@* }'), [
+		{
+			_tc: 'text1',
+			href: '#dummy',
+			'data-hello': 'world',
+			attr: 'value'
+		},
+		{
+			_tc: 'text2',
+			href: '#dummy2',
+			'data-hello': 'world2',
+			attr: 'value2'
+		}
+	]);
 
-	t.deepEqual(
-		qsx(links, 'a { ...@*, @.textContent => href }'),
-		[
-			{ href: 'text1', 'data-hello': 'world', attr: 'value' },
-			{ href: 'text2', 'data-hello': 'world2', attr: 'value2' }
-		],
-		'spread gets overwriten by subsequent properties'
-	);
+	assert.deepStrictEqual(qsx(links, 'a { ...@*, @.textConten() => href }'), [
+		{ href: 'text1', 'data-hello': 'world', attr: 'value' },
+		{ href: 'text2', 'data-hello': 'world2', attr: 'value2' }
+	]);
 
-	t.deepEqual(
-		qsx(links, '^div { a @* }'),
-		[
-			{ href: '#dummy', 'data-hello': 'world', attr: 'value' },
-			{ href: '#dummy2', 'data-hello': 'world2', attr: 'value2' }
-		],
-		'attribute wildcard as part of selector'
-	);
-
-	t.end();
+	assert.deepStrictEqual(qsx(links, '^div { a @* }'), [
+		{ href: '#dummy', 'data-hello': 'world', attr: 'value' },
+		{ href: '#dummy2', 'data-hello': 'world2', attr: 'value2' }
+	]);
 });

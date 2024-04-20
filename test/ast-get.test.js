@@ -1,20 +1,21 @@
-import tape from 'tape';
-import astToJson from './util-ast-to-json';
-import getAST from '../src/ast-get';
+import test from 'node:test';
+import assert from 'node:assert';
+import { traverse } from './_util.js';
+import getAST from '../src/ast-get.js';
 
-tape('getAST()', t => {
-	t.deepEqual(astToJson(...getAST('a @href')), {
+test('getAST()', () => {
+	assert.deepEqual(traverse(...getAST('a @href')), {
 		ctx: 'a',
 		attr: 'href'
 	});
 
-	t.deepEqual(astToJson(...getAST('a @href => url')), {
+	assert.deepEqual(traverse(...getAST('a @href => url')), {
 		ctx: 'a',
 		alias: 'url',
 		attr: 'href'
 	});
 
-	t.deepEqual(astToJson(...getAST('a { @href }')), {
+	assert.deepEqual(traverse(...getAST('a { @href }')), {
 		ctx: 'a',
 		children: [
 			{
@@ -25,7 +26,7 @@ tape('getAST()', t => {
 		]
 	});
 
-	t.deepEqual(astToJson(...getAST('a { @href, @.textContent }')), {
+	assert.deepEqual(traverse(...getAST('a { @href, @.textContent }')), {
 		ctx: 'a',
 		children: [
 			{
@@ -41,7 +42,7 @@ tape('getAST()', t => {
 		]
 	});
 
-	t.deepEqual(astToJson(...getAST('a { @href => url }')), {
+	assert.deepEqual(traverse(...getAST('a { @href => url }')), {
 		ctx: 'a',
 		children: [
 			{
@@ -52,8 +53,8 @@ tape('getAST()', t => {
 		]
 	});
 
-	t.deepEqual(
-		astToJson(...getAST('a { @href >> url, @.textContent => text }')),
+	assert.deepEqual(
+		traverse(...getAST('a { @href >> url, @.textConten() => text }')),
 		{
 			ctx: 'a',
 			children: [
@@ -71,8 +72,8 @@ tape('getAST()', t => {
 		}
 	);
 
-	t.deepEqual(
-		astToJson(
+	assert.deepEqual(
+		traverse(
 			...getAST(`dt { 
 			a { @href, @.textContent },
 			:scope + dd @.textContent
@@ -103,105 +104,76 @@ tape('getAST()', t => {
 			]
 		}
 	);
-	t.end();
 });
 
-tape('commas and CSS semantics', t => {
-	t.deepEqual(
-		astToJson(...getAST('h2, h3')),
-		{
-			ctx: ':root',
-			first: true,
-			children: [{ ctx: 'h2' }, { ctx: 'h3' }]
-		},
-		'commas'
-	);
-	t.deepEqual(
-		astToJson(...getAST('{ h2, h3 }')),
-		{
-			ctx: ':root',
-			children: [{ ctx: 'h2' }, { ctx: 'h3' }]
-		},
-		'commas w/ group'
-	);
+test('commas and CSS semantics', () => {
+	assert.deepEqual(traverse(...getAST('h2, h3')), {
+		ctx: ':root',
+		first: true,
+		children: [{ ctx: 'h2' }, { ctx: 'h3' }]
+	});
+	assert.deepEqual(traverse(...getAST('{ h2, h3 }')), {
+		ctx: ':root',
+		children: [{ ctx: 'h2' }, { ctx: 'h3' }]
+	});
 
-	t.deepEqual(
-		astToJson(...getAST(':is(h2, h3)')),
-		{
-			ctx: ':matches(h2,h3)'
-		},
-		':is()'
-	);
-	t.end();
+	assert.deepEqual(traverse(...getAST(':is(h2, h3)')), {
+		ctx: ':matches(h2,h3)'
+	});
 });
 
-tape('Syntax errors', t => {
-	t.throws(() => {
+test('Syntax errors', () => {
+	assert.throws(() => {
 		getAST('a { @href }}');
 	}, /Unexpected \}/);
 
-	t.throws(() => {
+	assert.throws(() => {
 		getAST('li { @title, a { @href }');
 	}, /Missing \}/);
 
-	t.throws(() => {
+	assert.throws(() => {
 		getAST('a:is(a, b))');
 	}, /Unexpected \)/);
 
-	t.throws(() => {
+	assert.throws(() => {
 		getAST('li:not(a, b');
 	}, /Missing \)/);
 
-	t.throws(() => {
+	assert.throws(() => {
 		getAST('a @{href}');
 	}, /after \@/);
 
-	t.throws(() => {
+	assert.throws(() => {
 		getAST('a >>{href}');
 	}, /after \>\>/);
-
-	t.end();
 });
 
-tape('^ (first)', t => {
-	t.deepEqual(
-		astToJson(...getAST('a[href^="#"]')),
-		{
-			ctx: 'a[href^="#"]'
-		},
-		'ignore ^ unless first token'
-	);
+test('^ (first)', () => {
+	assert.deepEqual(traverse(...getAST('a[href^="#"]')), {
+		ctx: 'a[href^="#"]'
+	});
 
-	t.deepEqual(
-		astToJson(...getAST('a { ^ span }')),
-		{
-			ctx: 'a',
-			children: [
-				{
-					ctx: 'span',
-					first: true
-				}
-			]
-		},
-		'identify ^ as first'
-	);
-
-	t.end();
+	assert.deepEqual(traverse(...getAST('a { ^ span }')), {
+		ctx: 'a',
+		children: [
+			{
+				ctx: 'span',
+				first: true
+			}
+		]
+	});
 });
 
-tape('attribute wildcard', t => {
-	t.deepEqual(astToJson(...getAST('a @*')), { ctx: 'a', attr: '*' });
+test('attribute wildcard', () => {
+	assert.deepEqual(traverse(...getAST('a @*')), { ctx: 'a', attr: '*' });
 
-	t.deepEqual(
-		astToJson(...getAST('a { @* => . }')),
-		{ ctx: 'a', children: [{ ctx: '', attr: '*', alias: '.' }] },
-		'spread via alias'
-	);
+	assert.deepEqual(traverse(...getAST('a { @* => . }')), {
+		ctx: 'a',
+		children: [{ ctx: '', attr: '*', alias: '.' }]
+	});
 
-	t.deepEqual(
-		astToJson(...getAST('a { ...@* }')),
-		{ ctx: 'a', children: [{ ctx: '', attr: '*', alias: '.' }] },
-		'spread via ellipsis'
-	);
-	t.end();
+	assert.deepEqual(traverse(...getAST('a { ...@* }')), {
+		ctx: 'a',
+		children: [{ ctx: '', attr: '*', alias: '.' }]
+	});
 });

@@ -1,5 +1,5 @@
 import SymbolTree from 'symbol-tree';
-import { TOKENS, TOKENS_REGEX, STATE_INITIAL } from './constants';
+import { TOKENS, TOKENS_REGEX, STATE_INITIAL } from './constants.js';
 
 /*
 	Returns the AST of a selector

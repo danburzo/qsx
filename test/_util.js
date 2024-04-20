@@ -1,4 +1,10 @@
-export default function traverse($root, tree) {
+import { JSDOM } from 'jsdom';
+
+export function dom(content) {
+	return new JSDOM(content).window.document;
+}
+
+export function traverse($root, tree) {
 	if (Array.isArray($root)) {
 		return $root.map($r => traverse($r, tree));
 	}
